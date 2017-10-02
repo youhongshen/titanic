@@ -1,29 +1,32 @@
 import pandas
-import numpy as np
-from sklearn import preprocessing
 
-from preprocessing.impute import impute
+from preprocessing.impute import impute, normalize, build_model
 
-train = pandas.read_csv('../data/train.csv')
+data = pandas.read_csv('../data/train.csv')
 # print(train.head(20))
 # print(train.isnull().sum())
 
+# In [305]: train, validate, test = np.split(df.sample(frac=1), [int(.6*len(df)), int(.8*len(df))])
+
+train = data.head(600)
+test = data.tail(291)
+print('---------- test data ---------')
+print(test.isnull().sum())
+
 train = impute(train)
-print(train.head(20))
-# print(train.isnull().sum())
-
-print(train.values[1:5, 2:3])
-norm_age = preprocessing.normalize(train.values[:, 2:3], axis=0)
-print(norm_age)
-
-print(train.values[1:5, 5:6])
-norm_fare = preprocessing.normalize(train.values[:, 5:6], axis=0)
-
-train['Age'] = norm_age
-train['Fare'] = norm_fare
-
+train = normalize(train)
 print(train.head(20))
 
-# scale_age = preprocessing.scale(norm_age)
-# print(scale_age)
+X = train.values[:, 1:]
+y = train.values[:, 0:1]
 
+# print(test.isnull().sum())
+test = impute(test)
+test = normalize(test)
+print('----------- test after normalize ---------')
+print(test.head(20))
+print(test.isnull().sum())
+
+test_X = test.values[:, 1:]
+test_y = test.values[:, 0:1]
+build_model(X, y, test_X, test_y)
