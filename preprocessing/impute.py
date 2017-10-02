@@ -41,13 +41,14 @@ def impute(data):
     data = data.drop('Ticket', axis=1)
     data = data.drop('Cabin', axis=1)
 
-    values = data.values
     age_imputer = Imputer(strategy='mean')
-    age_trans = age_imputer.fit_transform(values[:, 2:3])
+    age_trans = age_imputer.fit_transform(data[['Age']].values)
     data['Age'] = age_trans
 
+    data['Fare'] = Imputer(strategy='mean').fit_transform(data[['Fare']].values)
+
     embark_imputer = CategoricalImputer()
-    embark_trans = embark_imputer.fit_transform(pd.DataFrame(values[:, 6:7]))
+    embark_trans = embark_imputer.fit_transform(data[['Embarked']])
     # print(embark_trans)
     embark_as_cat = cat_to_num(embark_trans)
     data['embarked_C'] = embark_as_cat[0]
@@ -78,7 +79,8 @@ def normalize(data):
     # print(data.head(20))
     # scale_age = preprocessing.scale(norm_age, axis=0)
 
-    norm_data = preprocessing.normalize(data.values[:, 1:5], axis=0)
+    # norm_data = preprocessing.normalize(data.values[:, 1:5], axis=0)
+    norm_data = preprocessing.normalize(data[['Age', 'SibSp', 'Parch', 'Fare']].values, axis=0)
     # norm_data = preprocessing.scale(norm_data, axis=0)
     # print(norm_data)
     data['Age'] = norm_data[:, 0:1]
@@ -88,7 +90,7 @@ def normalize(data):
     return data
 
 
-def build_model(X, y, test_X, test_y):
+def build_model(X, y, test_X, test_y, real_test):
     import math
     # pass
 
@@ -97,18 +99,25 @@ def build_model(X, y, test_X, test_y):
 
     model = Sequential()
     model.add(Dense(12, input_dim=12, activation='relu'))
-    model.add(Dense(6, activation='relu'))
+    model.add(Dense(12, activation='relu'))
+    model.add(Dense(12, activation='relu'))
     model.add(Dense(1, activation='tanh'))
 
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.fit(X, y, epochs=1000, batch_size=1000, verbose=2)
+    model.fit(X, y, epochs=1500, batch_size=1024, verbose=2)
     # scores = model.evaluate(X, y)
     # print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
 
-    y_hat = model.predict(test_X, batch_size=1000, verbose=1)
+    y_hat = model.predict(test_X, batch_size=1024, verbose=1)
     # print(y_hat)
     rounded = [math.fabs(round(x[0])) for x in y_hat]
     z = [a[0][0] == a[1] for a in zip(test_y, rounded)]
     print(z)
     print(z.count(True) / len(z))
 
+    # if real_test is not None:
+    #     print('--- predict real test ----')
+    #     pred = model.predict(real_test, batch_size=1024)
+    #     rounded = [math.fabs(round(x[0])) for x in pred]
+    #     for x in rounded:
+    #         print('%d' % x)

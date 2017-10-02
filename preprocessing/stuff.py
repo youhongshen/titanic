@@ -19,4 +19,16 @@ y = train.values[:, 0:1]
 
 test_X = test.values[:, 1:]
 test_y = test.values[:, 0:1]
-build_model(X, y, test_X, test_y)
+
+# rt = None
+print('-------- test data ---------')
+rt = pandas.read_csv('../data/test.csv')
+print(rt.head(20))
+print(rt.isnull().sum())
+rt = impute(rt)
+rt = normalize(rt)
+print('-------- test data after processing ---------')
+print(rt.head(20))
+print(rt.isnull().sum())
+
+build_model(X, y, test_X, test_y, rt.values)
