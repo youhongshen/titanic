@@ -1,6 +1,6 @@
 import pandas
 
-from preprocessing.impute import impute, normalize, build_model
+from models.impute import impute, normalize, build_model
 
 data = pandas.read_csv('../data/train.csv')
 # print(train.head(20))
