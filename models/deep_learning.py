@@ -70,24 +70,32 @@ def impute(data):
 
 
 def normalize(data):
-    norm_data = preprocessing.normalize(data[['Age', 'SibSp', 'Parch', 'Fare']].values, axis=0)
+    # norm_data = preprocessing.normalize(data[['Age', 'SibSp', 'Parch', 'Fare']].values, axis=0)
+    # data[['Age', 'SibSp', 'Parch', 'Fare']] = norm_data
+
+    norm_data = preprocessing.normalize(data[['Age', 'Fare']].values, axis=0)
+    data[['Age', 'Fare']] = norm_data
+
+    data = data.drop('SibSp', axis=1)
+    data = data.drop('Parch', axis=1)
     # norm_data = models.scale(norm_data, axis=0)
-    data[['Age', 'SibSp', 'Parch', 'Fare']] = norm_data
     return data
 
 
 def build_model(X, y, test_X, test_y, real_test):
 
     model = Sequential()
-    model.add(Dense(12, input_dim=12, activation='relu', kernel_initializer='he_uniform'))
-    model.add(Dense(48, activation='relu', kernel_regularizer=l2(l=0.01), kernel_initializer='he_uniform'))
-    model.add(Dense(48, activation='relu', kernel_regularizer=l2(l=0.01), kernel_initializer='he_uniform'))
+    # model.add(Dense(12, input_dim=12, activation='relu', kernel_initializer='he_uniform'))
+    model.add(Dense(20, input_dim=10, activation='relu', kernel_initializer='he_uniform'))
+    model.add(Dense(100, activation='relu', kernel_regularizer=l2(l=0.01), kernel_initializer='he_uniform'))
+    model.add(Dense(10, activation='relu', kernel_regularizer=l2(l=0.01), kernel_initializer='he_uniform'))
     model.add(Dense(1, activation='tanh', kernel_regularizer=l2(l=0.01), kernel_initializer='he_uniform'))
 
-    model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.005, decay=0.0005), metrics=['accuracy'])
-    model.fit(X, y, epochs=1500, batch_size=1024, verbose=2)
-    scores = model.evaluate(X, y)
-    print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+    model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.005, decay=0.001), metrics=['accuracy'])
+    # model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.005, decay=0.0005))
+    model.fit(X, y, epochs=2000, batch_size=1024, verbose=2)
+    # scores = model.evaluate(X, y)
+    # print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
 
     y_hat = model.predict(test_X, batch_size=1024, verbose=1)
     # print(y_hat)
